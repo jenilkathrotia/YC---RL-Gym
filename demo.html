@@ -1,16 +1,30 @@
 <!doctype html>
-<html lang="en"><head><meta charset="utf-8"><title>TestBench-Forge</title>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>TestBench-Forge</title>
 <style>
-  :root{--bg:#0c0e12;--card:#151821;--line:#262b36;--muted:#8b93a3;--base:#e0a64b;--good:#37d67a;--txt:#eef1f6}
+  :root{--bg:#0c0e12;--card:#151821;--line:#262b36;--muted:#8b93a3;--base:#e0a64b;--good:#37d67a;--txt:#eef1f6;--accent:#5b8cff}
   *{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--txt);
     font:15px/1.5 -apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;padding:40px 20px}
-  .wrap{max-width:760px;margin:0 auto}
-  h1{font-size:26px;margin:0 0 4px} .sub{color:var(--muted);margin:0 0 26px;font-size:13px}
-  .mean{display:flex;align-items:baseline;gap:14px;margin:0 0 26px}
-  .mean .big{font-size:54px;font-weight:700;color:var(--good);font-variant-numeric:tabular-nums}
-  .mean .lbl{color:var(--muted)}
-  .row{display:grid;grid-template-columns:160px 1fr 140px;align-items:center;gap:14px;margin:10px 0}
-  .name{font-family:ui-monospace,Menlo,monospace;font-size:13px;color:#c7cedb}
+  .wrap{max-width:780px;margin:0 auto}
+  h1{font-size:26px;margin:0 0 4px} .sub{color:var(--muted);margin:0 0 22px;font-size:13px}
+  .means{display:flex;flex-wrap:wrap;gap:14px;margin:0 0 26px}
+  .stat{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 18px;flex:1 1 200px}
+  .stat.held{border-color:var(--accent)}
+  .stat .big{font-size:40px;font-weight:700;color:var(--good);font-variant-numeric:tabular-nums;line-height:1.1}
+  .stat .big .from{color:var(--base);font-size:24px} .stat .big .arr{color:var(--muted);font-size:24px}
+  .stat .lbl{color:var(--muted);font-size:12px;margin-top:4px}
+  .stat.held .lbl b{color:var(--accent)}
+  .grouphdr{display:flex;align-items:center;gap:10px;margin:24px 0 6px;font-size:13px;
+    text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+  .grouphdr .tag{font-size:10px;letter-spacing:.04em;border-radius:5px;padding:2px 7px;
+    background:rgba(91,140,255,.16);color:var(--accent);border:1px solid rgba(91,140,255,.4);text-transform:none}
+  .grouphdr.held{color:var(--accent)}
+  .row{display:grid;grid-template-columns:170px 1fr 150px;align-items:center;gap:14px;margin:9px 0}
+  .row.held{padding:4px 8px;margin-left:-8px;border-left:2px solid var(--accent);
+    background:rgba(91,140,255,.05);border-radius:0 8px 8px 0}
+  .name{font-family:ui-monospace,Menlo,monospace;font-size:13px;color:#c7cedb;display:flex;align-items:center;gap:7px}
+  .name .ho{font-size:9px;letter-spacing:.03em;color:var(--accent);border:1px solid rgba(91,140,255,.5);
+    border-radius:4px;padding:1px 5px;text-transform:uppercase}
+  .name .hero{font-size:9px;color:#04130a;background:var(--good);border-radius:4px;padding:1px 5px;font-weight:700}
   .track{background:#0a0c10;border:1px solid var(--line);border-radius:7px;height:22px;overflow:hidden}
   .fill{height:100%;width:var(--b);background:linear-gradient(90deg,var(--base),#caa055);
     transition:width 1.5s cubic-bezier(.2,.8,.2,1),background 1.5s}
@@ -18,36 +32,50 @@
   .pct{font-variant-numeric:tabular-nums;font-size:13px;color:var(--muted);text-align:right}
   .pct .tv{color:var(--good);font-weight:600} .pct .delta{color:var(--good);opacity:0;transition:opacity .6s}
   body.trained .pct .delta{opacity:1}
-  .head{margin:26px 0;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px 20px}
+  .head{margin:26px 0 14px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px 20px}
+  .head .tag{display:inline-block;font-size:10px;letter-spacing:.04em;text-transform:uppercase;color:var(--base);
+    border:1px solid rgba(224,166,75,.45);border-radius:5px;padding:2px 7px;margin-bottom:10px}
   .head .q{font-family:ui-monospace,Menlo,monospace;font-size:13px;color:#c7cedb;margin-bottom:10px}
   .verdict{font-size:15px} .miss{color:#ff6b6b} .catch{color:var(--good);font-weight:600}
+  .head .note{color:var(--muted);font-size:12px;margin-top:12px;border-top:1px solid var(--line);padding-top:10px}
+  .head .note b{color:var(--accent)}
   .stateA{display:block} .stateB{display:none} body.trained .stateA{display:none} body.trained .stateB{display:block}
   button{margin-top:8px;background:var(--good);color:#04130a;border:0;border-radius:9px;
     padding:12px 22px;font-size:15px;font-weight:700;cursor:pointer}
-  button:disabled{opacity:.5;cursor:default} .foot{color:var(--muted);font-size:12px;margin-top:22px}
+  button:disabled{opacity:.5;cursor:default} .foot{color:var(--muted);font-size:12px;margin-top:16px}
+  .foot b{color:var(--txt)} .foot .hl{color:var(--accent)}
 </style></head><body>
 <div class="wrap">
   <h1>TestBench-Forge — bug-kill meter</h1>
-  <p class="sub">Reward = fraction of hidden, freshly-injected mutants the agent's test suite kills. measured offline (no API key): a lazy happy-path suite vs a thorough edge-case suite, scored by the environment.</p>
-  <div class="mean"><span class="big" id="mean">62%</span><span class="lbl">mean mutant-kill rate</span></div>
-  <div class="row"><div class="name">merge_intervals</div><div class="track"><div class="fill" style="--b:78%;--t:100%"></div></div><div class="pct"><span class="bv">78%</span> → <span class="tv">100%</span> <span class="delta">+22</span></div></div><div class="row"><div class="name">is_balanced</div><div class="track"><div class="fill" style="--b:50%;--t:100%"></div></div><div class="pct"><span class="bv">50%</span> → <span class="tv">100%</span> <span class="delta">+50</span></div></div><div class="row"><div class="name">two_sum</div><div class="track"><div class="fill" style="--b:75%;--t:100%"></div></div><div class="pct"><span class="bv">75%</span> → <span class="tv">100%</span> <span class="delta">+25</span></div></div><div class="row"><div class="name">run_length_encode</div><div class="track"><div class="fill" style="--b:93%;--t:100%"></div></div><div class="pct"><span class="bv">93%</span> → <span class="tv">100%</span> <span class="delta">+7</span></div></div><div class="row"><div class="name">binary_search</div><div class="track"><div class="fill" style="--b:44%;--t:100%"></div></div><div class="pct"><span class="bv">44%</span> → <span class="tv">100%</span> <span class="delta">+56</span></div></div><div class="row"><div class="name">roman_to_int</div><div class="track"><div class="fill" style="--b:22%;--t:100%"></div></div><div class="pct"><span class="bv">22%</span> → <span class="tv">100%</span> <span class="delta">+78</span></div></div><div class="row"><div class="name">gcd</div><div class="track"><div class="fill" style="--b:100%;--t:100%"></div></div><div class="pct"><span class="bv">100%</span> → <span class="tv">100%</span> <span class="delta">+0</span></div></div><div class="row"><div class="name">flatten</div><div class="track"><div class="fill" style="--b:0%;--t:100%"></div></div><div class="pct"><span class="bv">0%</span> → <span class="tv">100%</span> <span class="delta">+100</span></div></div><div class="row"><div class="name">is_palindrome</div><div class="track"><div class="fill" style="--b:75%;--t:100%"></div></div><div class="pct"><span class="bv">75%</span> → <span class="tv">100%</span> <span class="delta">+25</span></div></div><div class="row"><div class="name">fizzbuzz</div><div class="track"><div class="fill" style="--b:83%;--t:100%"></div></div><div class="pct"><span class="bv">83%</span> → <span class="tv">100%</span> <span class="delta">+17</span></div></div>
+  <p class="sub">Reward = fraction of hidden, freshly-injected mutants the model's test suite kills. grpo_result.json — base Qwen/Qwen2.5-3B-Instruct vs the GRPO-trained model (held-out run). “before” = the base model generating test suites (n=5, temp 0.7); “after” = the GRPO-trained model. A real model-vs-model comparison, not a synthetic proxy.</p>
+  <div class="means">
+    <div class="stat"><div class="big"><span class="from">11%</span> <span class="arr">→</span> <span id="meanTrain">11%</span></div><div class="lbl">TRAIN — 7 modules the model trained on</div></div>
+    <div class="stat held"><div class="big"><span class="from">38%</span> <span class="arr">→</span> <span id="meanHeld">38%</span></div><div class="lbl"><b>HELD-OUT</b> — 3 unseen modules · the generalization headline</div></div>
+  </div>
+  <div class="grouphdr">Trained on (7 modules)</div><div class="row"><div class="name">merge_intervals</div><div class="track"><div class="fill" style="--b:20%;--t:80%"></div></div><div class="pct"><span class="bv">20%</span> → <span class="tv">80%</span> <span class="delta">+60</span></div></div><div class="row"><div class="name">two_sum</div><div class="track"><div class="fill" style="--b:0%;--t:60%"></div></div><div class="pct"><span class="bv">0%</span> → <span class="tv">60%</span> <span class="delta">+60</span></div></div><div class="row"><div class="name">run_length_encode</div><div class="track"><div class="fill" style="--b:20%;--t:100%"></div></div><div class="pct"><span class="bv">20%</span> → <span class="tv">100%</span> <span class="delta">+80</span></div></div><div class="row"><div class="name">gcd</div><div class="track"><div class="fill" style="--b:0%;--t:100%"></div></div><div class="pct"><span class="bv">0%</span> → <span class="tv">100%</span> <span class="delta">+100</span></div></div><div class="row"><div class="name">flatten</div><div class="track"><div class="fill" style="--b:0%;--t:100%"></div></div><div class="pct"><span class="bv">0%</span> → <span class="tv">100%</span> <span class="delta">+100</span></div></div><div class="row"><div class="name">is_palindrome</div><div class="track"><div class="fill" style="--b:20%;--t:100%"></div></div><div class="pct"><span class="bv">20%</span> → <span class="tv">100%</span> <span class="delta">+80</span></div></div><div class="row"><div class="name">fizzbuzz</div><div class="track"><div class="fill" style="--b:20%;--t:100%"></div></div><div class="pct"><span class="bv">20%</span> → <span class="tv">100%</span> <span class="delta">+80</span></div></div><div class="grouphdr held">Held-out — never trained on (3 modules) <span class="tag">proves generalization</span></div><div class="row held"><div class="name">binary_search<span class="ho">held-out</span><span class="hero">hero</span></div><div class="track"><div class="fill" style="--b:39%;--t:100%"></div></div><div class="pct"><span class="bv">39%</span> → <span class="tv">100%</span> <span class="delta">+61</span></div></div><div class="row held"><div class="name">roman_to_int<span class="ho">held-out</span></div><div class="track"><div class="fill" style="--b:0%;--t:51%"></div></div><div class="pct"><span class="bv">0%</span> → <span class="tv">51%</span> <span class="delta">+51</span></div></div><div class="row held"><div class="name">is_balanced<span class="ho">held-out</span></div><div class="track"><div class="fill" style="--b:75%;--t:80%"></div></div><div class="pct"><span class="bv">75%</span> → <span class="tv">80%</span> <span class="delta">+5</span></div></div>
   <div class="head">
+    <div class="tag">illustration · not the model's literal suite</div>
     <div class="q">bug: <b>ignores bracket type</b> — accepts <code>"(]"</code> as balanced</div>
     <div class="verdict stateA">a lazy (happy-path) suite: <span class="miss">✗ missed — accepts the corrupt input</span></div>
     <div class="verdict stateB">a thorough (edge-case) suite: <span class="catch">✓ caught — a test fails on "(]"</span></div>
+    <div class="note">This is an <b>illustration</b> of the <i>kind</i> of edge-case bug the reward rewards catching — scored with hand-written suites, since we didn't save the trained model's generated suite text. In the real run <code>is_balanced</code> was already near-ceiling (0.75→0.80); the real headline win is <b>binary_search 0.39 → 1.00</b>, generalized from never being trained on.</div>
   </div>
-  <button id="btn" onclick="train()">Reveal a thorough suite ▶</button>
-  <p class="foot">Real models scored live through this environment: <b>Qwen3-8B → 0.90</b> · the reward is non-gameable (a no-op / assert-False suite → 0).</p>
-  <p class="foot">A lazy suite passes the obvious cases but misses the boundary bug; a thorough one catches it — scored only by bugs it never saw. That gap is exactly what RL training is wired to close.</p>
+  <button id="btn" onclick="train()">Run RFT ▶</button>
+  <p class="foot">Trained on 7 modules, evaluated on <span class="hl">3 it never saw</span>. Held-out mean <b>0.38 → 0.77</b>; <span class="hl">binary_search 0.39 → 1.00</span> without ever training on it — a transferable test-writing skill, not memorization. <code>roman_to_int</code> only reached 0.51 (partial transfer) and <code>is_balanced</code> barely moved (already high) — shown honestly.</p>
+  <p class="foot">The reward is <b>non-gameable</b>: it's mutation-kill rate scored by the environment, no LLM judge — a no-op / assert-False suite scores 0. Eval is <b>n=5</b> per module (temp 0.7), so individual numbers carry ~±0.1 noise; the direction is unambiguous.</p>
+  <p class="foot">Separate live-baseline context: a frontier model (<b>Qwen3-8B</b>) scored <b>0.90</b> through this same environment — the gym discriminates skill, and the 3B model's training curve climbed from a first-10-step mean of <b>0.13</b> to a last-10-step mean of <b>0.82</b> over 80 steps.</p>
 </div>
 <script>
-  var MB=62, MT=100;
+  function animate(id, b, t){
+    var el=document.getElementById(id), t0=null, dur=1500;
+    function step(ts){ if(!t0)t0=ts; var k=Math.min(1,(ts-t0)/dur);
+      el.textContent=Math.round(b+(t-b)*k)+'%'; if(k<1)requestAnimationFrame(step); }
+    requestAnimationFrame(step);
+  }
   function train(){
     document.body.classList.add('trained');
     document.getElementById('btn').disabled=true;
-    var el=document.getElementById('mean'), t0=null, dur=1500;
-    function step(ts){ if(!t0)t0=ts; var k=Math.min(1,(ts-t0)/dur);
-      el.textContent=Math.round(MB+(MT-MB)*k)+'%'; if(k<1)requestAnimationFrame(step); }
-    requestAnimationFrame(step);
+    animate('meanTrain', 11, 91);
+    animate('meanHeld', 38, 77);
   }
 </script></body></html>
