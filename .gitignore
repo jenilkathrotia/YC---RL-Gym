@@ -18,6 +18,7 @@ venv/
 train_log*.jsonl
 train_progress.json
 train_console.log
+modal_grpo_result.json
 .hud_eval.toml
 
 # OS
