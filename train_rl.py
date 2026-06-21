@@ -20,11 +20,12 @@ import argparse
 import asyncio
 import inspect
 import json
+import os
 import sys
 import time
 import traceback
 
-DIR = "/Users/jenilkathrotiya/Downloads/YC---RL-Gym"
+DIR = os.path.dirname(os.path.abspath(__file__))
 ENVFILE = DIR + "/env.py"
 sys.path.insert(0, DIR)
 

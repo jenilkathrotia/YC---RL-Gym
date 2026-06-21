@@ -56,6 +56,13 @@ def compute_score(messages, ground_truth):
     rate, info = testbench.score_suite(module_id, suite)
     if not info.get("gate"):
         return 0.0, f"gate failed: {info.get('reason', 'suite did not pass reference')}"
+    denom = info.get("denominator", "raw")
+    if denom == "ms_star":
+        return rate, (
+            f"MS* killed {info.get('ms_star_killed', 0)}/{info.get('ms_star_total', 0)} "
+            f"behavioral mutant clusters; raw killed {info.get('killed', 0)}/"
+            f"{info.get('mutants', 0)}"
+        )
     return rate, f"killed {info['killed']}/{info['mutants']} hidden mutants"
 
 
