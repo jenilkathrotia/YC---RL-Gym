@@ -34,6 +34,7 @@ _SUITE_RUNNER = r'''
 import json, sys, types, contextlib
 d = json.loads(sys.stdin.read())
 _NONCE = d.get("nonce", "")
+_SUITE_SRC = d["suite"]
 def _emit(passed, n):
     # the parent trusts ONLY the verdict line carrying this per-call nonce, so an
     # untrusted suite that prints a forged {"passed": true} ledger is ignored.
@@ -43,6 +44,9 @@ try:
     exec(d["impl"], ns)
 except BaseException:
     pass  # tests calling the (now-undefined) function will fail -> mutant killed
+del d  # FRAME ISOLATION: the impl/mutant source now lives only as a function object in ns.
+       # A suite that walks the call stack (f_back -> f_globals) finds no source text to
+       # build a pass-iff-reference oracle. This is the real defense; the AST guard is a sieve.
 
 # Agents habitually write `from <fn> import <fn>` / `from solution import <fn>` and
 # `import pytest`. Make the impl's functions importable and stub pytest so those habits
@@ -88,7 +92,7 @@ except Exception:
     pass
 
 try:
-    exec(d["suite"], ns)
+    exec(_SUITE_SRC, ns)
 except BaseException:
     _emit(False, 0); raise SystemExit
 tests = [v for k, v in list(ns.items()) if k.startswith("test_") and callable(v)]
@@ -651,25 +655,24 @@ def get_mutant_pool(module_id: str) -> list:
     return pool
 
 
-# A test suite is UNTRUSTED code. These names/modules/attributes are the static escape
-# vectors that would let a suite read the hidden reference/mutant source (frame &
-# introspection walks), reach the OS, or forge the runner verdict. An ordinary suite
-# (plain asserts, pytest.raises/approx, importing the function under test) uses none of them.
-_DENY_MODULES = {
-    "os", "sys", "subprocess", "inspect", "importlib", "builtins", "ctypes", "socket",
-    "signal", "gc", "threading", "multiprocessing", "posix", "pty", "code", "codeop",
-    "runpy", "marshal", "pickle", "shutil", "resource", "mmap", "fcntl", "platform",
-}
+# A test suite is UNTRUSTED code. Imports are ALLOWLISTED, not denylisted — a denylist is a
+# sieve: `operator.attrgetter("f_back")` walks the call stack with the attribute name as a
+# runtime string the AST never sees, reads the hidden reference out of the harness frame, and
+# fakes a perfect score (confirmed by red-team). So only pytest / solution / the function
+# under test may be imported; every escape primitive (eval/exec/getattr-class names) and every
+# dunder attribute is rejected; literal frame attrs are denied too. Defense-in-depth: the
+# runner also deletes the impl source before the suite runs (frame isolation).
+_ALLOWED_IMPORTS = {"pytest", "solution"}
+# benign dunder *names* a suite may legitimately mention (e.g. `if __name__ == "__main__"`);
+# everything else dunder is an escape gadget.
+_ALLOWED_DUNDER_NAMES = {"__name__", "__doc__", "__file__", "__spec__", "__loader__", "__package__"}
 _DENY_NAMES = {
-    "eval", "exec", "compile", "open", "__import__", "globals", "locals", "vars",
+    "eval", "exec", "compile", "open", "__import__", "globals", "locals", "vars", "dir",
     "getattr", "setattr", "delattr", "input", "breakpoint", "memoryview",
 }
-_DENY_ATTRS = {
-    "__globals__", "__subclasses__", "__mro__", "__bases__", "__base__", "__class__",
-    "__builtins__", "__code__", "__closure__", "__dict__", "__getattribute__",
-    "__reduce__", "__reduce_ex__", "__init_subclass__", "__subclasshook__",
-    "f_globals", "f_back", "f_locals", "f_builtins", "gi_frame", "cr_frame", "tb_frame",
-    "_getframe", "currentframe",
+_DENY_ATTRS = {  # non-dunder frame/introspection attrs (all dunder attrs are blocked wholesale)
+    "f_back", "f_globals", "f_locals", "f_builtins", "f_code", "gi_frame", "cr_frame",
+    "ag_frame", "tb_frame", "tb_next", "_getframe", "currentframe", "mro",
 }
 
 
@@ -681,20 +684,22 @@ def _suite_security_violation(suite_src: str) -> str | None:
         tree = ast.parse(suite_src)
     except SyntaxError:
         return None  # unparseable -> it just fails the gate -> 0 anyway
+    allowed = _ALLOWED_IMPORTS | {m["func"] for m in MODULES.values()}
     for node in ast.walk(tree):
         if isinstance(node, ast.Import):
             for a in node.names:
-                if a.name.split(".")[0] in _DENY_MODULES:
+                if a.name.split(".")[0] not in allowed:
                     return "import:" + a.name
         elif isinstance(node, ast.ImportFrom):
-            if (node.module or "").split(".")[0] in _DENY_MODULES:
-                return "import-from:" + (node.module or "")
-        elif isinstance(node, ast.Attribute):
-            if node.attr in _DENY_ATTRS:
-                return "attr:" + node.attr
+            if (node.module or "").split(".")[0] not in allowed:
+                return "import-from:" + (node.module or "<relative>")
         elif isinstance(node, ast.Name):
-            if node.id in _DENY_NAMES:
+            dunder = node.id.startswith("__") and node.id.endswith("__")
+            if node.id in _DENY_NAMES or (dunder and node.id not in _ALLOWED_DUNDER_NAMES):
                 return "name:" + node.id
+        elif isinstance(node, ast.Attribute):
+            if (node.attr.startswith("__") and node.attr.endswith("__")) or node.attr in _DENY_ATTRS:
+                return "attr:" + node.attr
     return None
 
 

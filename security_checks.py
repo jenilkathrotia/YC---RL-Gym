@@ -33,6 +33,25 @@ ATTACKS = {
         "import os\n"
         "def test_x():\n"
         "    assert os.getpid() > 0\n",
+    "operator.attrgetter frame-walk reads hidden impl (RED-TEAM killer)":
+        "import operator\n"
+        "def _read():\n"
+        "    try:\n"
+        "        raise ValueError()\n"
+        "    except ValueError as e:\n"
+        "        f = operator.attrgetter('tb_frame')(operator.attrgetter('__traceback__')(e))\n"
+        "        while f is not None:\n"
+        "            g = operator.attrgetter('f_globals')(f)\n"
+        "            if isinstance(g.get('d'), dict):\n"
+        "                return g['d']['impl']\n"
+        "            f = operator.attrgetter('f_back')(f)\n"
+        "        return ''\n"
+        "def test_pass_iff_reference():\n"
+        "    assert 'lo, hi = 0, len(nums) - 1' in _read()\n",
+    "import testbench for a pass-iff-reference oracle":
+        "import testbench\n"
+        "def test_x():\n"
+        "    assert testbench.MODULES['binary_search']['reference']\n",
     "eval an expression":
         "def test_x():\n"
         "    assert eval('1+1') == 2\n",
