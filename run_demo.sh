@@ -37,10 +37,8 @@ echo "      held-out mean   0.23  →  0.79"
 echo "      binary_search   0.31  →  0.93   (never trained on)"
 echo "════════════════════════════════════════════════════════════"
 echo
-echo "  Opening the model's REAL base-vs-trained suites…"
-( open demo_suites.html 2>/dev/null \
-  || xdg-open demo_suites.html 2>/dev/null \
-  || echo "  → open demo_suites.html in a browser" )
+echo "  The model's REAL base-vs-trained suites + the reward curve are in the"
+echo "  interactive demo. In another terminal:  ./run.sh   (http://localhost:5173)"
 echo
 echo "  Pitch: you don't label outputs — you train the GRADER,"
 echo "         and the grading generalizes. That's the RSI bottleneck."

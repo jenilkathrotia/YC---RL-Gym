@@ -167,9 +167,8 @@ Every module reaches a clean **1.000** ceiling (all mutants killable); `assert F
 | Resource | Link |
 | --- | --- |
 | Full judge-facing writeup | [`SUBMISSION.md`](SUBMISSION.md) |
-| Literal base → trained suites (witnessed, not illustrative) | [`demo_suites.html`](demo_suites.html) |
 | Training curve + health + honest caveats | [`TRAINING_STATS.md`](TRAINING_STATS.md) |
-| **Interactive demo UI** (hero + 3 beats, Vite/React) | `./run.sh` → http://localhost:5173 (`web/`) |
+| **Interactive demo UI** (hero + 3 beats incl. witnessed base→trained suites, Vite/React) | `./run.sh` → http://localhost:5173 (`web/`) |
 | Demo video | Coming soon |
 
 ## Files
@@ -184,6 +183,5 @@ Every module reaches a clean **1.000** ceiling (all mutants killable); `assert F
 | `daytona_runner.py` · `modal_runner.py` | Sandbox runners for executing untrusted code (`REWARDFORGE_RUNNER=daytona` / `modal`) |
 | `fireworks_baseline.py` · `build_dataset.py` | Raw baseline / best-of-N runner; emits `dataset.jsonl` for RFT |
 | `selftest.py` | Proves weak→thorough kill-rate headroom + non-gameability, **no API key** |
-| `web/` + `run.sh` | **Interactive demo frontend** (Vite + React + framer-motion): hero + 3 beats; `./run.sh` serves it on localhost |
-| `demo_suites.py` → `demo_suites.html` | Renders the literal witnessed base→trained suites side by side |
+| `web/` + `run.sh` | **Interactive demo frontend** (Vite + React + framer-motion): hero + 3 beats, incl. the literal witnessed base→trained suites; `./run.sh` serves it on localhost |
 | `tasks.py` | The 10 modules under test for `hud eval` |

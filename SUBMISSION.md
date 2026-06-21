@@ -52,7 +52,7 @@ We trained Qwen2.5-3B with **GRPO on a single Modal A100** (LoRA r=16) on **7 mo
 
 The skill — *write correct, boundary/edge-case tests that kill bugs* — **transferred to tasks it never saw**. That's the RSI thesis made concrete: you don't label outputs, you train the **grader**, and the grading generalizes. (KL ≈ 0.012; completion length 269 → 160 tokens — it caught *more* bugs with *fewer* tokens, the opposite of reward-hacking by padding.) Reproduce: `modal run modal_grpo.py` to train; `modal run dump_suites.py` to reload the saved adapter and re-measure.
 
-**How it's measured (honest):** the held-out figure is the **reproducible** one — reload the saved adapter and sample **n=16 per module** (the in-training n=5 eval agreed on the trained side: 0.38 → 0.77). The per-suite spread is real and informative: the **base** model passes the correctness gate on only ~2–5 of 16 tries — it keeps writing a *wrong* assertion the gate rejects — while the **trained** model passes on 12–15 and writes thorough suites. See the literal base-vs-trained suites in **`demo_suites.html`**.
+**How it's measured (honest):** the held-out figure is the **reproducible** one — reload the saved adapter and sample **n=16 per module** (the in-training n=5 eval agreed on the trained side: 0.38 → 0.77). The per-suite spread is real and informative: the **base** model passes the correctness gate on only ~2–5 of 16 tries — it keeps writing a *wrong* assertion the gate rejects — while the **trained** model passes on 12–15 and writes thorough suites. See the literal base-vs-trained suites in the interactive demo (**`./run.sh`** → `web/`).
 
 ---
 

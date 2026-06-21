@@ -30,7 +30,7 @@ TRAIN                              HELD-OUT (never trained on)
 |---|---|---|---|
 | 0.175 | 0.498 | 0.683 | **0.817** |
 
-First-10-step mean **0.13** → last-10-step mean **0.82**; best step **1.00** (steps 32, 47, 52, 55, 57, 58, 62, 64, 66, 67, 77, 79, 80). Monotonic climb, no collapse. Full per-step curve in `grpo_result.json` (`curve`); visual in `demo_training.html`.
+First-10-step mean **0.13** → last-10-step mean **0.82**; best step **1.00** (steps 32, 47, 52, 55, 57, 58, 62, 64, 66, 67, 77, 79, 80). Monotonic climb, no collapse. Full per-step curve in `grpo_result.json` (`curve`); visual in the interactive demo (`./run.sh`, Beat 3).
 
 ## Training health
 Hyperparameters identical to the prior 80-step run on this same config, whose TRL logs showed: KL divergence mean 0.012 / max 0.045 (improved **without drifting** from base), grad norm mean 0.37 (no exploding gradients), within-group reward std 0.41 → 0.34 (**converging**), completion length 269 → 160 tokens (learned to catch more bugs with **fewer** tokens — the opposite of reward-hacking by padding).
